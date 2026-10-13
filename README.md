@@ -1,6 +1,6 @@
 ﻿# Expense Tracker
 
-I built this project in Grade 12 to practice web development and include it in my college portfolio. I plan to study a Bachelor of Science in Computer Science, and this project gave me a way to apply what I was learning to a working app.
+I am in Grade 12 and am working on this project to sharpen my coding skills for college. I plan to study a Bachelor of Science in Computer Science, and this project gave me a way to apply what I was learning to a working app.
 
 The app lets users keep track of expenses, filter their spending, and see the results in charts. The project also includes a Python server and a separate page for trying out requests to the backend.
 
