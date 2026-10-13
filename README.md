@@ -1,41 +1,42 @@
-﻿# Expense Tracker — Grade 12 Computer Science Portfolio
+﻿# Expense Tracker
 
-An expense-tracking project developed in Grade 12 for my college application portfolio toward a Bachelor of Science in Computer Science. The project combines a React spending dashboard with a separate Python HTTP server demonstration and PostgreSQL as the author's backend database.
+I built this project in Grade 12 to practice web development and include it in my college portfolio. I plan to study a Bachelor of Science in Computer Science, and this project gave me a way to apply what I was learning to a working app.
 
-The dashboard supports expense management, filtering, summaries, and charts. The repository also includes an early client/server exercise, showing the current development stage through readable source code.
+The app lets users keep track of expenses, filter their spending, and see the results in charts. The project also includes a Python server and a separate page for trying out requests to the backend.
 
-## Authorship and learning approach
+## How I built it
 
-I created the application code through hands-on programming without AI help. My approach was to practice implementing application behavior directly: managing state, handling input, transforming records, and experimenting with browser-to-server communication. AI assisted with this README and the frontend README update; the statement about working without AI applies to the application code.
+I wrote the application code myself through hands-on practice without AI help. I used AI to help edit these README files.
 
-This portfolio documents implemented behavior and current boundaries. It provides concrete examples of programming concepts that form a foundation for undergraduate computer science.
+## Tools I used
 
-## Architecture
-
-| Layer | Technology | Current role |
+| Part | Tools | What it does |
 | --- | --- | --- |
-| Frontend | React 19, JavaScript, Vite 8 | Expense dashboard and application state |
-| Styling | Tailwind CSS 4 | Responsive layout, forms, table, and dark theme |
-| Visualization | Chart.js 4, react-chartjs-2 | Category pie chart and totals by date |
-| Frontend persistence | Browser `localStorage` | Saves the expense list as JSON |
-| Backend/server | Python `http.server` | Separate local HTTP demonstration on port 8000 |
-| Database | PostgreSQL | Backend database identified by the author; connection code and schema are not included in this checkout |
-| Development checks | ESLint | JavaScript and React lint configuration |
+| Frontend | React, JavaScript, Vite | Displays the dashboard and handles user actions |
+| Styling | Tailwind CSS | Styles the forms, table, and page layout |
+| Charts | Chart.js, react-chartjs-2 | Shows spending by category and date |
+| Browser storage | localStorage | Keeps expenses after refreshing the page |
+| Backend server | Python `http.server` | Responds to requests on `localhost:8000` |
+| Database | PostgreSQL | My backend database; the connection code and table setup are not included in this repository yet |
+| Code checks | ESLint | Checks the frontend JavaScript and React code |
+
+## How the parts fit together
+
+Right now, the expense dashboard saves its data in the browser. The Python server example runs separately. The React app does not send expenses to the server yet.
 
 ```mermaid
 flowchart TD
-    User[User] --> Dashboard[React expense dashboard]
-    Dashboard --> State[Expense state in App.jsx]
-    State --> Views[Filtered table, total, and charts]
-    State <--> Storage[Browser localStorage]
-    Demo[Separate HTML demo: Get Results] -->|HTTP GET using fetch| Server[Python HTTPServer: localhost:8000]
-    Server -->|Greeting response| Demo
-    Database[PostgreSQL: author-reported backend database]
+    User[User] --> App[React dashboard]
+    App --> Expenses[Expense list in App.jsx]
+    Expenses --> Display[Table, total, and charts]
+    Expenses <--> Storage[localStorage]
+    Page[Separate HTML test page] -->|GET request| Python[Python server on port 8000]
+    Python -->|Response text| Page
 ```
 
-The two browser interfaces are separate. React does not currently call the Python server. PostgreSQL is part of the author's backend setup, but no database connection, schema, migration, or query is present in the checked-in source. The root text file records a PostgreSQL 17 binary directory on Windows; it is a setup note, not a database configuration.
+I use PostgreSQL for the backend database. This repository has a note with the PostgreSQL 17 installation path, but it does not include the database connection or SQL files yet. That means someone downloading this version can run the dashboard and server example, but cannot recreate my database setup from these files alone.
 
-## Repository organization
+## Project folders
 
 ```text
 full_stack_application/
@@ -64,35 +65,44 @@ full_stack_application/
 └── CProgram FilesPostgreSQL17bin.txt
 ```
 
-## Frontend and application logic
+## Frontend
 
-Users can create, read, update, and delete expenses with a description, numeric amount, date, and category. Categories are Bills, Food, and Fun. Deletion asks for confirmation; updates use an edit modal. Short notifications provide feedback after changes.
+Users can add an expense with a description, amount, date, and category. The categories are Bills, Food, and Fun. They can also edit an expense or delete it after confirming the action.
 
-`App.jsx` owns shared state and supplies values and event handlers to smaller components. Controlled inputs update form state using their `name` and `value` properties. Creating an expense checks for required values, converts the amount with `parseFloat`, assigns a timestamp ID, and inserts the record at the beginning of the list. Editing uses `map` to replace a matching record; deletion uses `filter` to remove it.
+The dashboard has category and date filters. The table, total, and charts all use the filtered expenses, so they update together. The pie chart shows spending by category, and the bar chart shows spending by date.
 
-Category and inclusive date filters produce one derived expense list. The table reads that list, while `reduce` computes its total and grouped amounts for both charts. Changing a filter therefore updates the records, total, and visualizations together. Dates use `YYYY-MM-DD` strings; chart labels are not explicitly sorted.
+Most of the logic is in `App.jsx`. I split the interface into smaller components for the header, form, filters, table, and charts. `App.jsx` passes data and functions to those components through props.
 
-Expenses initialize from JSON in `localStorage`, falling back to four sample records. An effect saves later changes. This persistence belongs to the browser and is independent of PostgreSQL. Component details are documented in the [frontend README](frontend/README.md).
+### Expense logic
 
-## Backend and HTTP server
+- **Adding:** Check that the description, amount, and date are filled in, convert the amount with `parseFloat`, give the expense a `Date.now()` ID, and add it to the start of the list.
+- **Editing:** Use `map` to update the expense with the matching ID.
+- **Deleting:** Use `filter` to remove the expense with the matching ID.
+- **Filtering:** Check the category and compare dates written as `YYYY-MM-DD`. The start and end dates are included.
+- **Calculating:** Use `reduce` to add up the amounts and group them for the charts.
+- **Saving:** Read saved expenses from `localStorage` when the app starts and use `useEffect` to save changes as JSON. If there is no saved list, load four sample expenses.
 
-`python-server-project/main.py` uses Python's standard-library `BaseHTTPRequestHandler` and `HTTPServer`. It binds to `localhost:8000` and runs `serve_forever()`.
+There is more detail in the [frontend README](frontend/README.md).
 
-The `do_GET` handler returns status `200`, an `Access-Control-Allow-Origin: *` header, a `Content-Type: Text/html` header, and the body `Hello from the python backend`. It responds to GET requests without route-specific logic. Expense endpoints and database operations are not implemented in this file.
+## Backend and server
 
-The neighboring `index.html` demonstrates the client side of the exchange. Clicking **Get Results** calls `fetch('http://localhost:8000')`, awaits the response, reads it as text, and inserts it into the page with `textContent`. These files demonstrate HTTP request/response flow, asynchronous JavaScript, response headers, and DOM updates.
+The server code is in `python-server-project/main.py`. It uses Python's built-in `HTTPServer` and `BaseHTTPRequestHandler`, so this example does not need extra Python packages.
 
-## PostgreSQL database
+The server runs at `http://localhost:8000`. When it receives a GET request, it returns status `200` and the message `Hello from the python backend`. It also sends an `Access-Control-Allow-Origin: *` header so the separate test page can read the response from another origin.
 
-The author identifies PostgreSQL as the backend database. The repository includes a setup note pointing to `C:\Program Files\PostgreSQL\17\bin`. The database setup cannot be reproduced from this checkout because connection settings, schema, and SQL operations are absent.
+The test page is `python-server-project/index.html`. Clicking **Get Results** runs `fetch`, waits for the response, reads it as text, and displays it on the page. This is the part of the project that shows a browser communicating with a server. The current Python file does not have expense routes or database queries.
 
-For a future repository-complete integration, the expense fields—ID, description, amount, date, and category—can form a relational table. A PostgreSQL `NUMERIC` column would support exact decimal amounts. A Python API would validate incoming records, execute parameterized queries, and return JSON to React. This describes the next integration step, not an existing schema or implemented API.
+## Database
 
-## Run locally
+PostgreSQL is the database I use for the backend. The file `CProgram FilesPostgreSQL17bin.txt` contains the path `C:\Program Files\PostgreSQL\17\bin` from my Windows setup.
 
-### Expense dashboard
+I still need to include the database setup in this repository and connect the expense dashboard to it. The expense records already have an ID, description, amount, date, and category, which gives me a starting point for a database table. For money, a PostgreSQL `NUMERIC` column would avoid the rounding issues that can happen with floating-point numbers.
 
-Install Node.js and npm compatible with the Vite dependency in `frontend/package.json`. From the repository root:
+## Running the project
+
+### Frontend
+
+You need Node.js and npm that support the Vite version in `frontend/package.json`. Starting from the project root, run:
 
 ```powershell
 cd frontend
@@ -100,45 +110,50 @@ npm install
 npm run dev
 ```
 
-Open the URL printed by Vite. The current dashboard does not require Python or PostgreSQL because its records are stored in the browser.
+Open the local address shown in the terminal. The dashboard works without starting Python or PostgreSQL because this version saves expenses in the browser.
 
-### Python HTTP demonstration
+Other frontend commands:
 
-With Python 3 installed, open another terminal at the repository root:
+| Command | What it does |
+| --- | --- |
+| `npm run build` | Creates the production files in `dist/` |
+| `npm run preview` | Lets you preview the app after building it |
+| `npm run lint` | Checks the JavaScript and JSX code |
+
+### Python server
+
+You need Python 3. Open another terminal at the project root and run:
 
 ```powershell
 cd python-server-project
 python main.py
 ```
 
-Open `python-server-project/index.html` in a browser and click **Get Results**, or visit `http://localhost:8000` directly. Stop the server with `Ctrl+C`. This demonstration uses only the Python standard library and does not connect to PostgreSQL in the provided code.
+Open `python-server-project/index.html` in a browser and click **Get Results**. You can also visit `http://localhost:8000` directly to see the message. Press `Ctrl+C` in the terminal to stop the server.
 
-## Review walkthrough
+## Things to try
 
-1. Launch the dashboard and inspect the sample expenses.
-2. Add an expense, edit it using **Save Changes**, and confirm deletion of a record.
-3. Apply category or date filters and observe the table, total, and charts update together.
-4. Reload the page to check browser persistence.
-5. Run the Python server and use **Get Results** in its separate HTML page to observe an HTTP response.
+1. Add an expense and check that it appears in the table.
+2. Edit it with **Save Changes**, then check the updated amount.
+3. Filter by category or date and watch the total and charts change.
+4. Refresh the page to check that the expenses are still saved.
+5. Delete an expense and confirm the action.
+6. Start the Python server and try the **Get Results** button on the separate test page.
 
-The frontend also provides `npm run build`, `npm run preview`, and `npm run lint`. These are available review commands; this documentation does not claim they pass or that an automated test suite exists.
+## What this project helped me practice
 
-## Computer science skills demonstrated
+Working on this app gave me practice with React state, forms, props, and event handlers. I also used JavaScript arrays and objects to store records, update them, and calculate totals. The charts made those calculations visible on the page.
 
-| Concept | Evidence in the code |
-| --- | --- |
-| Decomposition and interfaces | UI components receive props and callbacks from `App.jsx` |
-| State and event-driven programming | React hooks, controlled inputs, and event handlers |
-| Data structures and algorithms | Arrays of expense objects processed with `map`, `filter`, and `reduce` |
-| Persistence and serialization | JSON reads/writes through `localStorage` |
-| Data visualization | Grouped totals become pie and bar chart datasets |
-| Client/server communication | Browser `fetch` calls a Python HTTP handler |
-| Development tooling | Vite configuration, npm scripts, and ESLint configuration |
+The Python example gave me a way to work with HTTP requests and responses. These are topics I want to keep studying in computer science, along with databases, algorithms, and software development.
 
-These examples give an admissions reviewer specific code to examine and provide a foundation for studying algorithms, databases, networks, and software engineering in a BS CS program.
+## What I want to improve
 
-## Current limits and development goals
+- Connect the React app to Python expense routes and PostgreSQL.
+- Add the database schema and setup instructions to the repository.
+- Improve amount validation and handle invalid saved data.
+- Sort the dates on the bar chart.
+- Fix the edit form's Cancel button so it cannot submit the form.
+- Improve keyboard support for the edit window.
+- Add tests for adding, editing, deleting, filtering, and saving expenses.
 
-The React and Python portions are not yet integrated in the checked-in code, and PostgreSQL integration is not represented in the source. There is no authentication or shared-user storage. Frontend validation is basic, malformed saved JSON is not handled, amounts use floating-point arithmetic, and chart dates are not explicitly sorted. The edit modal's Cancel button also needs an explicit non-submit type.
-
-Further work can connect React to expense API endpoints, include the PostgreSQL schema and reproducible setup, improve validation and error handling, refine modal accessibility, and add tests for CRUD, filtering, and persistence. These goals extend the existing hands-on work into a complete database-backed application.
+The app currently has basic validation and browser-only storage. It does not have user accounts or an automated test suite yet.
